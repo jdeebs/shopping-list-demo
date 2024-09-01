@@ -28,9 +28,15 @@ export default function App() {
   const db = getFirestore(app);
 
   return (
+    // NavigationContainer wraps the entire navigation system
     <NavigationContainer>
+      {/* Define stack-based navigation structure, set "ShoppingLists" as the first screen */}
       <Stack.Navigator initialRouteName="ShoppingLists">
-        <Stack.Screen name="ShoppingLists" component={ShoppingLists} />
+        {/* Define an individual screen in the stack */}
+        <Stack.Screen name="ShoppingLists">
+          {/* Functional component renders the ShoppingLists component, passing the Firestore database reference as a prop */}
+          {(props) => <ShoppingLists db={db} {...props} />}
+        </Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>
   );
