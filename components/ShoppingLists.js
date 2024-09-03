@@ -103,9 +103,7 @@ const ShoppingLists = ({ db }) => {
           <Text style={styles.addButtonText}>Add</Text>
         </TouchableOpacity>
       </View>
-      {Platform.OS === "android" || Platform.OS === "ios" ? (
-        <KeyboardAvoidingView behavior="height" style={styles.iosKeyboard} />
-      ) : null}
+      {Platform.OS === "ios" ? <KeyboardAvoidingView behavior="padding" /> : null}
     </View>
   );
 };
