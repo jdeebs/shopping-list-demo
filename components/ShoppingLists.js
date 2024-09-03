@@ -8,8 +8,9 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
+  Alert,
 } from "react-native";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, addDoc } from "firebase/firestore";
 
 const ShoppingLists = ({ db }) => {
   const [lists, setLists] = useState([]);
@@ -37,6 +38,18 @@ const ShoppingLists = ({ db }) => {
     });
     // Update the state variable with the new list of shopping lists
     setLists(newLists);
+  };
+
+  // Called when the Add button is pressed
+  const addShoppingList = async (newList) => {
+    const newListRef = await addDoc(collection(db, "shoppinglists"), newList);
+    // If the write query was successful it will have an id property and we can display a success message
+    if (newListRef.id) {
+      setLists([newList, ...lists]);
+      Alert.alert(`The list "${listName}" has been added.`);
+    } else {
+      Alert.alert("Unable to add the list. Please try again later.");
+    }
   };
 
   useEffect(() => {
@@ -76,7 +89,17 @@ const ShoppingLists = ({ db }) => {
           value={item2}
           onChangeText={setItem2}
         />
-        <TouchableOpacity style={styles.addButton} onPress={() => {}}>
+        <TouchableOpacity
+          style={styles.addButton}
+          // On button press, create a new object out of the three states values, then call the addShoppingList function
+          onPress={() => {
+            const newList = {
+              name: listName,
+              items: [item1, item2],
+            };
+            addShoppingList(newList);
+          }}
+        >
           <Text style={styles.addButtonText}>Add</Text>
         </TouchableOpacity>
       </View>
