@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
-import { collection, getDocs, addDoc } from "firebase/firestore";
+import { collection, getDocs, addDoc, onSnapshot } from "firebase/firestore";
 
 const ShoppingLists = ({ db }) => {
   const [lists, setLists] = useState([]);
@@ -18,44 +18,41 @@ const ShoppingLists = ({ db }) => {
   const [item1, setItem1] = useState("");
   const [item2, setItem2] = useState("");
 
-  const fetchShoppingLists = async () => {
-    /**
-     * The listsDocuments variable is a snapshot of the
-       shoppinglists collection in the Firestore database
-     * First argument of the collection function is the 
-       database reference, second argument is the collection 
-       name
-    **/
-    const listsDocuments = await getDocs(collection(db, "shoppinglists"));
-    // To store the shopping lists
-    let newLists = [];
-    /**
-     * Adds an object to newLists for each document in the collection
-     * The ... spread operator adds the remaining property-value pairs to the return object. Without it, the remaining properties would be returned in a nested object which is invalid JavaScript object syntax
-     **/
-    listsDocuments.forEach((docObject) => {
-      newLists.push({ id: docObject.id, ...docObject.data() });
-    });
-    // Update the state variable with the new list of shopping lists
-    setLists(newLists);
-  };
-
   // Called when the Add button is pressed
   const addShoppingList = async (newList) => {
+    // Check if all fields are filled before adding list
+    if (listName === "" || item1 === "" || item2 === "") {
+      Alert.alert("Please fill out all fields before adding the list.");
+      return; // Exit function early if validation fails
+    }
+
     const newListRef = await addDoc(collection(db, "shoppinglists"), newList);
     // If the write query was successful it will have an id property and we can display a success message
     if (newListRef.id) {
       setLists([newList, ...lists]);
       Alert.alert(`The list "${listName}" has been added.`);
     } else {
-      Alert.alert("Unable to add the list. Please try again later.");
+      Alert.alert("There was a problem adding the list. Please try again.");
     }
   };
 
   useEffect(() => {
-    // Call async function when component mounts
-    fetchShoppingLists();
-  }, [`${lists}`]);
+    const ubsubShoppinglists = onSnapshot(
+      collection(db, "shoppinglists"),
+      (documentsSnapshot) => {
+        let newLists = [];
+        documentsSnapshot.forEach((doc) => {
+          newLists.push({ id: doc.id, ...doc.data() });
+        });
+        setLists(newLists);
+      }
+    );
+
+    // Clean up code
+    return () => {
+      if (ubsubShoppinglists) ubsubShoppinglists();
+    };
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -103,7 +100,9 @@ const ShoppingLists = ({ db }) => {
           <Text style={styles.addButtonText}>Add</Text>
         </TouchableOpacity>
       </View>
-      {Platform.OS === "ios" ? <KeyboardAvoidingView behavior="padding" /> : null}
+      {Platform.OS === "ios" ? (
+        <KeyboardAvoidingView behavior="padding" />
+      ) : null}
     </View>
   );
 };
