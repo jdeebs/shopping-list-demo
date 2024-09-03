@@ -1,5 +1,4 @@
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet } from "react-native";
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { NavigationContainer } from "@react-navigation/native";
