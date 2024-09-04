@@ -10,7 +10,13 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
-import { collection, getDocs, addDoc, onSnapshot } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  deleteDoc,
+  doc,
+  onSnapshot,
+} from "firebase/firestore";
 
 const ShoppingLists = ({ db }) => {
   const [lists, setLists] = useState([]);
@@ -54,6 +60,35 @@ const ShoppingLists = ({ db }) => {
     };
   }, []);
 
+  // Handle list deletion with a confirmation prompt
+  const confirmDelete = (item) => {
+    Alert.alert(
+      "Confirm Deletion",
+      `Are you sure you want to delete the list "${item.name}"?`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          onPress: () => handleDelete(item),
+          style: "destructive",
+        },
+      ]
+    );
+  };
+
+  // Delete the list from the database and the UI
+  const handleDelete = async (item) => {
+    try {
+      await deleteDoc(doc(db, "shoppinglists", item.id));
+      setLists(lists.filter((list) => list.id !== item.id));
+    } catch (error) {
+      Alert.alert("There was a problem deleting the list. Please try again after refreshing the app.");
+    }
+  };
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -62,8 +97,19 @@ const ShoppingLists = ({ db }) => {
         renderItem={({ item }) => (
           <View style={styles.listItem}>
             <Text>
-              {item.name} : {item.items.join(", ")}
+              {/* Check that the items array exists before using join to avoid undefined errors */}
+              {item.name} : {item.items ? item.items.join(", ") : ""}
             </Text>
+
+            <TouchableOpacity
+              style={styles.deleteButton}
+              // On button press, delete the list from the database and UI
+              onPress={() => {
+                confirmDelete(item);
+              }}
+            >
+              <Text style={styles.deleteButtonText}>Remove</Text>
+            </TouchableOpacity>
           </View>
         )}
       />
@@ -152,6 +198,19 @@ const styles = StyleSheet.create({
   },
   addButtonText: {
     color: "#FFF",
+    fontWeight: "600",
+    fontSize: 20,
+  },
+  deleteButton: {
+    width: 80,
+    height: 30,
+    backgroundColor: "#000000",
+    color: "#FFF",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  deleteButtonText: {
+    color: "#FF0000",
     fontWeight: "600",
     fontSize: 20,
   },
