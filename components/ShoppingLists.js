@@ -16,13 +16,18 @@ import {
   deleteDoc,
   doc,
   onSnapshot,
+  query,
+  where,
 } from "firebase/firestore";
 
-const ShoppingLists = ({ db }) => {
+const ShoppingLists = ({ db, route }) => {
   const [lists, setLists] = useState([]);
   const [listName, setListName] = useState("");
   const [item1, setItem1] = useState("");
   const [item2, setItem2] = useState("");
+
+  // Extract userID prop via route params
+  const { userID } = route.params;
 
   // Called when the Add button is pressed
   const addShoppingList = async (newList) => {
@@ -43,16 +48,22 @@ const ShoppingLists = ({ db }) => {
   };
 
   useEffect(() => {
-    const ubsubShoppinglists = onSnapshot(
+    // Define query to fetch documents from shoppinglists collection
+    const q = query(
       collection(db, "shoppinglists"),
-      (documentsSnapshot) => {
-        let newLists = [];
-        documentsSnapshot.forEach((doc) => {
-          newLists.push({ id: doc.id, ...doc.data() });
-        });
-        setLists(newLists);
-      }
+      // Only return shopping lists that belong to the specific user
+      where("uid", "==", userID)
     );
+    // Real-time listener on the query(q), When data changes automatically retrieve updated snapshot of documents
+    const ubsubShoppinglists = onSnapshot(q, (documentsSnapshot) => {
+      let newLists = [];
+      // Iterate over the returned documents and create a new object combining ID and data using spread operator
+      documentsSnapshot.forEach((doc) => {
+        newLists.push({ id: doc.id, ...doc.data() });
+      });
+      // Update list state with new document object
+      setLists(newLists);
+    });
 
     // Clean up code
     return () => {
@@ -85,7 +96,9 @@ const ShoppingLists = ({ db }) => {
       await deleteDoc(doc(db, "shoppinglists", item.id));
       setLists(lists.filter((list) => list.id !== item.id));
     } catch (error) {
-      Alert.alert("There was a problem deleting the list. Please try again after refreshing the app.");
+      Alert.alert(
+        "There was a problem deleting the list. Please try again after refreshing the app."
+      );
     }
   };
 
@@ -137,6 +150,8 @@ const ShoppingLists = ({ db }) => {
           // On button press, create a new object out of the three states values, then call the addShoppingList function
           onPress={() => {
             const newList = {
+              // Ensure new lists contain unique userID for filtering of lists per user
+              uid: userID,
               name: listName,
               items: [item1, item2],
             };
