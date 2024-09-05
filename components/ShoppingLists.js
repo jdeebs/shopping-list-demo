@@ -19,6 +19,7 @@ import {
   query,
   where,
 } from "firebase/firestore";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const ShoppingLists = ({ db, route }) => {
   const [lists, setLists] = useState([]);
@@ -54,13 +55,15 @@ const ShoppingLists = ({ db, route }) => {
       // Only return shopping lists that belong to the specific user
       where("uid", "==", userID)
     );
-    // Real-time listener on the query(q), When data changes automatically retrieve updated snapshot of documents
-    const ubsubShoppinglists = onSnapshot(q, (documentsSnapshot) => {
+    // Real-time listener on the query(q), Retrieve updated snapshot of documents on change
+    const ubsubShoppinglists = onSnapshot(q, async (documentsSnapshot) => {
       let newLists = [];
-      // Iterate over the returned documents and create a new object combining ID and data using spread operator
+      // Iterate over the returned documents and create a new object combining ID and data
       documentsSnapshot.forEach((doc) => {
         newLists.push({ id: doc.id, ...doc.data() });
       });
+      // Cache lists when updated
+      cacheShoppingLists(newLists);
       // Update list state with new document object
       setLists(newLists);
     });
@@ -70,6 +73,14 @@ const ShoppingLists = ({ db, route }) => {
       if (ubsubShoppinglists) ubsubShoppinglists();
     };
   }, []);
+
+  const cacheShoppingLists = async (listsToCache) => {
+    try {
+      await AsyncStorage.setItem("shopping_lists", JSON.stringify(listsToCache));
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
 
   // Handle list deletion with a confirmation prompt
   const confirmDelete = (item) => {
