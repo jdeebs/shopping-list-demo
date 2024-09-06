@@ -3,6 +3,7 @@ import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { useNetInfo } from "@react-native-community/netinfo";
 
 // Import the screens
 import ShoppingLists from "./components/ShoppingLists";
@@ -29,6 +30,13 @@ export default function App() {
 
   // Initialize Cloud Firestore and get a reference to the service
   const db = getFirestore(app);
+
+  // Define new state for network connectivity status
+  const connectionStatus = useNetInfo();
+  useEffect(() => {
+    // Alert if connection is lost
+    if (connectionStatus.isConnected === false) Alert.alert("Connection lost!")
+  }, [connectionStatus.isConnected]);
 
   return (
     // NavigationContainer wraps the entire navigation system
