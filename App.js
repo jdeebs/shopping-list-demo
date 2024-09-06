@@ -56,8 +56,8 @@ export default function App() {
         {/* Define the Welcome and ShoppingLists screens in the stack */}
         <Stack.Screen name="Welcome" component={Welcome} />
         <Stack.Screen name="ShoppingLists">
-          {/* Functional component renders the ShoppingLists component, passing the Firestore database reference as a prop */}
-          {(props) => <ShoppingLists db={db} {...props} />}
+          {/* Functional component renders the ShoppingLists component, passing the Firestore db reference and connectionStatus state as a prop */}
+          {(props) => <ShoppingLists isConnected={connectionStatus.isConnected} db={db} {...props} />}
         </Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>
