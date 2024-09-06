@@ -28,7 +28,8 @@ import {
 // Async Storage for Data Caching
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const ShoppingLists = ({ db, route }) => {
+const ShoppingLists = ({ db, route, isConnected }) => {
+  // Initialize state to hold the lists and form inputs
   const [lists, setLists] = useState([]);
   const [listName, setListName] = useState("");
   const [item1, setItem1] = useState("");
@@ -55,41 +56,58 @@ const ShoppingLists = ({ db, route }) => {
     }
   };
 
+  let unsubShoppinglists;
   useEffect(() => {
-    // Define query to fetch documents from shoppinglists collection
-    const q = query(
-      collection(db, "shoppinglists"),
-      // Only return shopping lists that belong to the specific user
-      where("uid", "==", userID)
-    );
-    // Real-time listener on the query(q), Retrieve updated snapshot of documents on change
-    const ubsubShoppinglists = onSnapshot(q, async (documentsSnapshot) => {
-      let newLists = [];
-      // Iterate over the returned documents and create a new object combining ID and data
-      documentsSnapshot.forEach((doc) => {
-        newLists.push({ id: doc.id, ...doc.data() });
+    // Only run if connected to the internet
+    if (isConnected === true) {
+      // Unregister current onSnapshot listener to avoid registering multiple listeners when useEffect code is re-executed, causing memory leak.
+      if (unsubShoppinglists) unsubShoppinglists();
+      unsubShoppinglists = null;
+      // Define query to fetch documents from shoppinglists collection
+      const q = query(
+        collection(db, "shoppinglists"),
+        // Only return shopping lists that belong to the specific user
+        where("uid", "==", userID)
+      );
+      unsubShoppinglists = onSnapshot(q, (documentsSnapshot) => {
+        let newLists = [];
+        // Iterate over the returned documents and create a new object combining ID and data
+        documentsSnapshot.forEach((doc) => {
+          newLists.push({ id: doc.id, ...doc.data() });
+        });
+        // Cache lists when updated
+        cacheShoppingLists(newLists);
+        // Update list state with new document object
+        setLists(newLists);
       });
-      // Cache lists when updated
-      cacheShoppingLists(newLists);
-      // Update list state with new document object
-      setLists(newLists);
-    });
+    } else loadCachedLists();
 
-    // Clean up code
+    // Unregister listener to prevent duplicated listeners (memory leaks) when component re-renders
     return () => {
-      if (ubsubShoppinglists) ubsubShoppinglists();
+      if (unsubShoppinglists) unsubShoppinglists();
     };
-  }, []);
+  }, [isConnected]);
 
+  // Function to cache the shopping lists in AsyncStorage for offline usage
   const cacheShoppingLists = async (listsToCache) => {
     try {
+      // Create cached list
       await AsyncStorage.setItem(
         "shopping_lists",
+        // Convert list data to a string for storage
         JSON.stringify(listsToCache)
       );
     } catch (error) {
       console.log(error.message);
     }
+  };
+
+  // Function to load cached shopping lists from AsyncStorage when app is offline
+  const loadCachedLists = async () => {
+    // Retrieve the cached lists
+    const cachedLists = (await AsyncStorage.getItem("shopping_lists")) || [];
+    // Parse the cached data back into an array and update the list state
+    setLists(JSON.parse(cachedLists));
   };
 
   // Handle list deletion with a confirmation prompt
