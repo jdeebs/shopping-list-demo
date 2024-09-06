@@ -1,6 +1,10 @@
 import { StyleSheet, LogBox } from "react-native";
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import {
+  getFirestore,
+  disableNetwork,
+  enableNetwork,
+} from "firebase/firestore";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useNetInfo } from "@react-native-community/netinfo";
@@ -33,9 +37,15 @@ export default function App() {
 
   // Define new state for network connectivity status
   const connectionStatus = useNetInfo();
+
+  // Alert if connection is lost and disable Firestore db reconnect attempts until connection is re-established
   useEffect(() => {
-    // Alert if connection is lost
-    if (connectionStatus.isConnected === false) Alert.alert("Connection lost!")
+    if (connectionStatus.isConnected === false) {
+      Alert.alert("Connection lost!");
+      disableNetwork(db);
+    } else if (connectionStatus.isConnected === true) {
+      enableNetwork(db);
+    }
   }, [connectionStatus.isConnected]);
 
   return (
