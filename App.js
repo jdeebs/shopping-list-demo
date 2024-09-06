@@ -1,5 +1,8 @@
+// React Core Hooks
+import { useEffect } from "react";
+
 // React Native Core Components & APIs
-import { StyleSheet, LogBox } from "react-native";
+import { StyleSheet, LogBox, Alert } from "react-native";
 
 // Firebase Core & Firestore Modules
 import { initializeApp } from "firebase/app";

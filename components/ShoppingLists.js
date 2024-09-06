@@ -152,7 +152,8 @@ const ShoppingLists = ({ db, route, isConnected }) => {
               {/* Check that the items array exists before using join to avoid undefined errors */}
               {item.name} : {item.items ? item.items.join(", ") : ""}
             </Text>
-
+            {/* Only render the delete form when connected to the internet */}
+            {isConnected === true ? (
             <TouchableOpacity
               style={styles.deleteButton}
               // On button press, delete the list from the database and UI
@@ -162,44 +163,48 @@ const ShoppingLists = ({ db, route, isConnected }) => {
             >
               <Text style={styles.deleteButtonText}>Remove</Text>
             </TouchableOpacity>
+            ) : null}
           </View>
         )}
       />
-      <View style={styles.listForm}>
-        <TextInput
-          style={styles.listName}
-          placeholder="List name"
-          value={listName}
-          onChangeText={setListName}
-        />
-        <TextInput
-          style={styles.item}
-          placeholder="Item #1"
-          value={item1}
-          onChangeText={setItem1}
-        />
-        <TextInput
-          style={styles.item}
-          placeholder="Item #2"
-          value={item2}
-          onChangeText={setItem2}
-        />
-        <TouchableOpacity
-          style={styles.addButton}
-          // On button press, create a new object out of the three states values, then call the addShoppingList function
-          onPress={() => {
-            const newList = {
-              // Ensure new lists contain unique userID for filtering of lists per user
-              uid: userID,
-              name: listName,
-              items: [item1, item2],
-            };
-            addShoppingList(newList);
-          }}
-        >
-          <Text style={styles.addButtonText}>Add</Text>
-        </TouchableOpacity>
-      </View>
+      {/* Only render the add form when connected to the internet */}
+      {isConnected === true ? (
+        <View style={styles.listForm}>
+          <TextInput
+            style={styles.listName}
+            placeholder="List name"
+            value={listName}
+            onChangeText={setListName}
+          />
+          <TextInput
+            style={styles.item}
+            placeholder="Item #1"
+            value={item1}
+            onChangeText={setItem1}
+          />
+          <TextInput
+            style={styles.item}
+            placeholder="Item #2"
+            value={item2}
+            onChangeText={setItem2}
+          />
+          <TouchableOpacity
+            style={styles.addButton}
+            // On button press, create a new object out of the three states values, then call the addShoppingList function
+            onPress={() => {
+              const newList = {
+                // Ensure new lists contain unique userID for filtering of lists per user
+                uid: userID,
+                name: listName,
+                items: [item1, item2],
+              };
+              addShoppingList(newList);
+            }}
+          >
+            <Text style={styles.addButtonText}>Add</Text>
+          </TouchableOpacity>
+        </View>
+      ) : null}
       {Platform.OS === "ios" ? (
         <KeyboardAvoidingView behavior="padding" />
       ) : null}
