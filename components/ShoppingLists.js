@@ -1,4 +1,7 @@
+// React Core Hooks
 import { useState, useEffect } from "react";
+
+// React Native Core Components & APIs
 import {
   StyleSheet,
   View,
@@ -10,6 +13,8 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
+
+// Firebase Firestore Methods
 import {
   collection,
   addDoc,
@@ -19,6 +24,8 @@ import {
   query,
   where,
 } from "firebase/firestore";
+
+// Async Storage for Data Caching
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const ShoppingLists = ({ db, route }) => {
@@ -76,11 +83,14 @@ const ShoppingLists = ({ db, route }) => {
 
   const cacheShoppingLists = async (listsToCache) => {
     try {
-      await AsyncStorage.setItem("shopping_lists", JSON.stringify(listsToCache));
+      await AsyncStorage.setItem(
+        "shopping_lists",
+        JSON.stringify(listsToCache)
+      );
     } catch (error) {
       console.log(error.message);
     }
-  }
+  };
 
   // Handle list deletion with a confirmation prompt
   const confirmDelete = (item) => {

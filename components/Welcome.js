@@ -1,4 +1,7 @@
+// React Native Core Components & APIs
 import { StyleSheet, View, Text, TouchableOpacity, Alert } from "react-native";
+
+// Firebase Authentication Methods
 import { getAuth, signInAnonymously } from "firebase/auth";
 
 const Welcome = ({ navigation }) => {
