@@ -1,15 +1,22 @@
+// React Native Core Components & APIs
 import { StyleSheet, LogBox } from "react-native";
+
+// Firebase Core & Firestore Modules
 import { initializeApp } from "firebase/app";
 import {
   getFirestore,
   disableNetwork,
   enableNetwork,
 } from "firebase/firestore";
+
+// React Navigation Modules
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+
+// Network Information Hook
 import { useNetInfo } from "@react-native-community/netinfo";
 
-// Import the screens
+// App Screens
 import ShoppingLists from "./components/ShoppingLists";
 import Welcome from "./components/Welcome";
 
@@ -57,7 +64,13 @@ export default function App() {
         <Stack.Screen name="Welcome" component={Welcome} />
         <Stack.Screen name="ShoppingLists">
           {/* Functional component renders the ShoppingLists component, passing the Firestore db reference and connectionStatus state as a prop */}
-          {(props) => <ShoppingLists isConnected={connectionStatus.isConnected} db={db} {...props} />}
+          {(props) => (
+            <ShoppingLists
+              isConnected={connectionStatus.isConnected}
+              db={db}
+              {...props}
+            />
+          )}
         </Stack.Screen>
       </Stack.Navigator>
     </NavigationContainer>
